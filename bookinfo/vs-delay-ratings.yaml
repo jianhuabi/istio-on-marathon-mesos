@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: ratings
+spec:
+  hosts:
+  - ratings.marathon.l4lb.thisdcos.directory
+  http:
+  - match:
+    - headers:
+        end-user:
+          exact: jason
+    fault:
+      delay:
+        percent: 100
+        fixedDelay: 7s
+    route:
+    - destination:
+        host: ratings.marathon.l4lb.thisdcos.directory
+        subset: v1
+  - route:
+    - destination:
+        host: ratings.marathon.l4lb.thisdcos.directory
+        subset: v1

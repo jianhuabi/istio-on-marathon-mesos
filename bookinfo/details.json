@@ -1,0 +1,68 @@
+{
+  "id": "/details",
+  "containers": [
+    {
+      "name": "details",
+      "resources": {
+        "cpus": 0.5,
+        "mem": 1024
+      },
+      "image": {
+        "id": "istio/examples-bookinfo-details-v1:1.8.0",
+        "kind": "DOCKER"
+      },
+      "endpoints": [
+        {
+          "name": "http-9080",
+          "containerPort": 9080,
+          "hostPort": 0,
+          "protocol": [
+            "tcp"
+          ],
+          "labels": {
+            "VIP_0": "/details:9080"
+          }
+        }
+      ]
+    },
+    {
+      "name": "proxy",
+      "resources": {
+        "cpus": 0.5,
+        "mem": 1024
+      },
+      "image": {
+        "id": "registry.cn-hangzhou.aliyuncs.com/zmcc-istio/proxy_debug:1.0.5-allinone",
+        "kind": "DOCKER"
+      },
+      "exec": {
+        "command": {
+          "shell": "chmod +777 /dev/stdout; /usr/local/bin/istio-iptables.sh -p 15001 -u 1337 -m REDIRECT -i '*' -b 9080; su istio-proxy -c \"/usr/local/bin/pilot-agent proxy --discoveryAddress pilot.marathon.containerip.dcos.thisdcos.directory:15010  --domain marathon.l4lb.thisdcos.directory --serviceregistry Mesos --serviceCluster details-v1 --zipkinAddress zipkin.marathon.autoip.dcos.thisdcos.directory:31767 --configPath /var/lib/istio\""
+        }
+      }
+    }
+  ],
+  "scaling": {
+    "instances": 1,
+    "kind": "fixed"
+  },
+  "networks": [
+    {
+      "name": "dcos",
+      "mode": "container"
+    }
+  ],
+  "volumes": [],
+  "fetch": [],
+  "scheduling": {
+    "placement": {
+      "constraints": []
+    }
+  },
+  "environment": {
+    "SERVICES_DOMAIN": "marathon.l4lb.thisdcos.directory"
+  },
+  "labels": {
+    "version": "v1"
+  }
+}

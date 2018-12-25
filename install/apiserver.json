@@ -1,0 +1,37 @@
+{
+  "id": "/apiserver",
+  "instances": 1,
+  "container": {
+    "type": "DOCKER",
+    "volumes": [],
+    "docker": {
+      "image": "gcr.io/google_containers/kube-apiserver-amd64:v1.7.3"
+    },
+    "portMappings": [
+      {
+        "containerPort": 8080,
+        "hostPort": 10080,
+        "labels": {
+          "VIP_0": "/apiserver:10080"
+        },
+        "protocol": "tcp"
+      }
+    ]
+  },
+  "cpus": 0.5,
+  "mem": 512,
+  "requirePorts": false,
+  "networks": [
+    {
+      "mode": "container/bridge"
+    }
+  ],
+  "healthChecks": [],
+  "fetch": [],
+  "constraints": [],
+  "cmd": "kube-apiserver --etcd-servers http://etcd.marathon.autoip.dcos.thisdcos.directory:31379 --service-cluster-ip-range 10.99.0.0/16 --insecure-port 8080 -v 2 --insecure-bind-address 0.0.0.0",
+  "labels": {
+    "HAPROXY_GROUP": "external",
+    "HAPROXY_0_VHOST": ""
+  }
+}

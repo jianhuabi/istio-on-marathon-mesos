@@ -1,0 +1,53 @@
+{
+  "id": "/etcd",
+  "cmd": "/usr/local/bin/etcd -advertise-client-urls=http://0.0.0.0:2379 -listen-client-urls=http://0.0.0.0:2379",
+  "cpus": 0.5,
+  "mem": 512,
+  "disk": 0,
+  "instances": 1,
+  "acceptedResourceRoles": [
+    "*"
+  ],
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "forcePullImage": false,
+      "image": "quay.io/coreos/etcd:latest",
+      "parameters": [],
+      "privileged": false
+    },
+    "volumes": [],
+    "portMappings": [
+      {
+        "containerPort": 2379,
+        "hostPort": 31379,
+        "labels": {},
+        "name": "etcd",
+        "protocol": "tcp",
+        "servicePort": 10000
+      }
+    ]
+  },
+  "env": {
+    "SERVICE_IGNORE": "1"
+  },
+  "networks": [
+    {
+      "mode": "container/bridge"
+    }
+  ],
+  "healthChecks": [
+    {
+      "protocol": "HTTP",
+      "path": "/health",
+      "portIndex": 0,
+      "gracePeriodSeconds": 300,
+      "intervalSeconds": 60,
+      "timeoutSeconds": 20,
+      "maxConsecutiveFailures": 3
+    }
+  ],
+  "labels": {
+    "consul": ""
+  }
+}

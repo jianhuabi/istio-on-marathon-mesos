@@ -1,0 +1,61 @@
+{
+  "id": "/pilot",
+  "backoffFactor": 1.15,
+  "backoffSeconds": 1,
+  "cmd": "/usr/local/bin/pilot-discovery discovery --httpAddr :15007 --registries Mesos --domain marathon.l4lb.thisdcos.directory --mesosMaster http://master.mesos:8080 --kubeconfig /mnt/mesos/sandbox/kubeconfig",
+  "container": {
+    "portMappings": [
+      {
+        "containerPort": 15010,
+        "hostPort": 15010,
+        "protocol": "tcp",
+        "name": "grpc"
+      },
+      {
+        "containerPort": 15007,
+        "hostPort": 15007,
+        "protocol": "tcp",
+        "name": "http"
+      }
+    ],
+    "type": "MESOS",
+    "volumes": [],
+    "docker": {
+      "image": "registry.cn-hangzhou.aliyuncs.com/zmcc-istio/pilot:1.0.5.1",
+      "forcePullImage": false,
+      "parameters": []
+    }
+  },
+  "cpus": 1,
+  "disk": 0,
+  "fetch": [
+    {
+      "uri": "https://raw.githubusercontent.com/harryge00/mylinuxrc/master/dcos/kubeconfig",
+      "extract": false,
+      "executable": false,
+      "cache": false
+    }
+  ],
+  "instances": 1,
+  "maxLaunchDelaySeconds": 3600,
+  "mem": 1024,
+  "gpus": 0,
+  "networks": [
+    {
+      "name": "dcos",
+      "mode": "container"
+    }
+  ],
+  "requirePorts": false,
+  "upgradeStrategy": {
+    "maximumOverCapacity": 1,
+    "minimumHealthCapacity": 1
+  },
+  "killSelection": "YOUNGEST_FIRST",
+  "unreachableStrategy": {
+    "inactiveAfterSeconds": 0,
+    "expungeAfterSeconds": 0
+  },
+  "healthChecks": [],
+  "constraints": []
+}
