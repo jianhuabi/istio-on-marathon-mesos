@@ -63,6 +63,9 @@
   "environment": {
     "SERVICES_DOMAIN": "marathon.l4lb.thisdcos.directory"
   },
+  "acceptedResourceRoles": [
+    "slave_public"
+  ],
   "labels": {
     "version": "v1"
   }

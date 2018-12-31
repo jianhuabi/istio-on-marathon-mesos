@@ -10,7 +10,7 @@
     "portMappings": [
       {
         "containerPort": 8080,
-        "hostPort": 10080,
+        "hostPort": 30080,
         "labels": {
           "VIP_0": "/apiserver:10080"
         },

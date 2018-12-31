@@ -1,6 +1,6 @@
 # istio-on-marathon-mesos
 
-## How to run Istio on DC/OS
+## Quick Start on DC/OS
 
 1. Deploy etcd, apiserver, pilot, zipkin in DC/OS. 
 You can deploy those app through UI, or using command-line.
@@ -23,7 +23,9 @@ dcos marathon pod add bookinfo/productpage.json
 ```
 
 3. Now you can visit the productpage! 
-WIP. May need to run productpage in public node or Edge-lb.
+
+Visit `$HOST_IP_OF_PRODUCTPAGE:$HOST_PORT_OF_PRODUCTPAGE`
+You can refresh the page and find Book Reviews has three kinds of version. This is because the envoy proxy of `productpage` pod will do round-roubin load-balance to one of the 3 `reviews` pods when there is NO routing rules applied.
 
 4. Use kubectl to apply routing rules.
 In the master or any agent node:
@@ -37,11 +39,50 @@ kubectl config use-context istio
 ```
 kubectl apply -f bookinfo/vs-all-v1.yaml
 ```
+Now you can visit `productpage` again and find the `reviews` is always v1.
+
 * Fault inject: delaying requests to `details`
 ```
-kubectl apply -f bookinfo/vs-all-v1.yaml
+kubectl apply -f bookinfo/vs-delay-details.yaml
 ```
-Now you can login as `jason` and found the page loading is slow...
+Now you can login as `jason` and found the page loading is slow... 
+
+```
+# kubectl get virtualservice details
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: details
+spec:
+  hosts:
+  - details.marathon.l4lb.thisdcos.directory
+  http:
+  - match:
+    - headers:
+        end-user:
+          exact: jason
+    fault:
+      delay:
+        percent: 100
+        fixedDelay: 7s
+    route:
+    - destination:
+        host: details.marathon.l4lb.thisdcos.directory
+        subset: v1
+  - route:
+    - destination:
+        host: details.marathon.l4lb.thisdcos.directory
+        subset: v1
+```
+It inject 7s delay when routing to `details` service. 
+
+* Fault inject: aborting rules
+```
+kubectl apply -f bookinfo/vs-details-abort.yaml
+```
+Refresh the `productpage` and visit `zipkin`. You can find tracing information that the return `status code` of `details` is `500`
+
+
 
 ## How to run Istio on Marathon/Mesos
 
