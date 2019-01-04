@@ -117,4 +117,5 @@ https://github.com/harryge00/istio/tree/marathon-pilot/pilot/pkg/serviceregistry
 	```
 	So it will redirect traffics to one of the 3 IP:port, if no routing rules applied. After the upstream reviews Pod receives the traffics, it will check its inbound config and redirect traffics to corresponding listeners, which here is `127.0.0.1:9080`.
 
+## TODO
 

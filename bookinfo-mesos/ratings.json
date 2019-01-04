@@ -1,0 +1,90 @@
+{
+  "environment": {
+    "SERVICES_DOMAIN": "marathon.slave.mesos",
+    "ENVOY_DEBUG": "debug"
+  },
+  "labels": {
+    "ISTIO_SERVICE_NAME": "ratings",
+    "version": "v1"
+  },
+  "id": "/ratings",
+  "containers": [
+    {
+      "name": "ratings",
+      "resources": {
+        "cpus": 0.1,
+        "mem": 512,
+        "disk": 0,
+        "gpus": 0
+      },
+      "endpoints": [
+        {
+          "name": "http-9080",
+          "containerPort": 9080,
+          "hostPort": 0,
+          "protocol": [
+            "tcp"
+          ]
+        }
+      ],
+      "image": {
+        "kind": "DOCKER",
+        "id": "istio/examples-bookinfo-ratings-v1:1.8.0"
+      }
+    },
+    {
+      "name": "proxy",
+      "resources": {
+        "cpus": 0.2,
+        "mem": 512,
+        "disk": 0,
+        "gpus": 0
+      },
+      "exec": {
+        "command": {
+          "shell": "chmod +777 /dev/stdout; /usr/local/bin/istio-iptables.sh -p 15001 -u 1337 -m REDIRECT -i '*' -b 9080; iptables -t nat -I ISTIO_OUTPUT -d 172.31.0.0/16 -p tcp -m tcp --dport 5051 -j RETURN; su istio-proxy -c \"/usr/local/bin/pilot-agent proxy --discoveryAddress master.mesos:15010  --domain marathon.slave.mesos --serviceregistry Mesos --serviceCluster ratings-v1 --zipkinAddress zipkin.marathon.slave.mesos:31767 --configPath /var/lib/istio\""
+        }
+      },
+      "image": {
+        "kind": "DOCKER",
+        "id": "registry.cn-hangzhou.aliyuncs.com/zmcc-istio/proxy_debug:mesos"
+      }
+    }
+  ],
+  "networks": [
+    {
+      "name": "mesos-bridge",
+      "mode": "container"
+    }
+  ],
+  "scaling": {
+    "instances": 1,
+    "kind": "fixed"
+  },
+  "scheduling": {
+    "backoff": {
+      "backoff": 1,
+      "backoffFactor": 1.15,
+      "maxLaunchDelay": 3600
+    },
+    "upgrade": {
+      "minimumHealthCapacity": 1,
+      "maximumOverCapacity": 1
+    },
+    "killSelection": "YOUNGEST_FIRST",
+    "unreachableStrategy": {
+      "inactiveAfterSeconds": 0,
+      "expungeAfterSeconds": 0
+    },
+    "placement": {
+      "constraints": []
+    }
+  },
+  "executorResources": {
+    "cpus": 0.1,
+    "mem": 32,
+    "disk": 10
+  },
+  "volumes": [],
+  "fetch": []
+}
