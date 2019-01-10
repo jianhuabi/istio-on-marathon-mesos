@@ -1,0 +1,95 @@
+{
+    "id": "/reviews-v2",
+    "labels": {
+        "ISTIO_SERVICE_NAME": "reviews",
+        "version": "v2"
+    },
+    "version": "2019-01-09T11:59:51.267Z",
+    "environment": {
+        "SERVICES_DOMAIN": "marathon.slave.mesos",
+        "ENVOY_DEBUG": "debug"
+    },
+    "containers": [
+        {
+            "name": "reviews",
+            "resources": {
+                "cpus": 0.2,
+                "mem": 1024,
+                "disk": 0,
+                "gpus": 0
+            },
+            "endpoints": [
+                {
+                    "name": "http-9080",
+                    "containerPort": 9080,
+                    "hostPort": 0,
+                    "protocol": [
+                        "tcp"
+                    ]
+                }
+            ],
+            "image": {
+                "kind": "DOCKER",
+                "id": "another.test.chinamobile.registry/ruby/examples-bookinfo-reviews-v2:1.8.0"
+            }
+        },
+        {
+            "name": "proxy",
+            "exec": {
+                "command": {
+                    "shell": "chmod +777 /dev/stdout; /usr/local/bin/istio-iptables.sh -p 15001 -u 1337 -m REDIRECT -i '*' -b 9080; iptables -t nat -I ISTIO_OUTPUT -d 20.26.33.0/24 -p tcp -m tcp --dport 5051 -j RETURN; su istio-proxy -c \"/usr/local/bin/pilot-agent proxy --discoveryAddress 20.26.33.178:15010  --domain marathon.slave.mesos --serviceregistry Mesos --serviceCluster reviews-v2 --zipkinAddress zipkin.marathon.slave.mesos:31767 --configPath /var/lib/istio\""
+                }
+            },
+            "resources": {
+                "cpus": 0.2,
+                "mem": 512,
+                "disk": 0,
+                "gpus": 0
+            },
+            "image": {
+                "kind": "DOCKER",
+                "id": "another.test.chinamobile.registry/dcos/proxy_debug:mesos"
+            }
+        }
+    ],
+    "networks": [
+        {
+            "name": "mesos-bridge",
+            "mode": "container"
+        }
+    ],
+    "scaling": {
+        "kind": "fixed",
+        "instances": 1
+    },
+    "scheduling": {
+        "placement": {
+          "constraints": [
+            {
+              "fieldName": "hostname",
+              "operator": "LIKE",
+              "value": "20.26.33.178"
+            }
+          ]
+        },
+        "backoff": {
+            "backoff": 1,
+            "backoffFactor": 1.15,
+            "maxLaunchDelay": 3600
+        },
+        "upgrade": {
+            "minimumHealthCapacity": 1,
+            "maximumOverCapacity": 1
+        },
+        "killSelection": "YOUNGEST_FIRST",
+        "unreachableStrategy": {
+            "inactiveAfterSeconds": 0,
+            "expungeAfterSeconds": 0
+        }
+    },
+    "executorResources": {
+        "cpus": 0.1,
+        "mem": 32,
+        "disk": 10
+    }
+}
