@@ -1,0 +1,56 @@
+{
+    "id": "/citadel",
+    "backoffFactor": 1.15,
+    "backoffSeconds": 1,
+    "cmd": "/usr/local/bin/istio_ca --citadel-storage-namespace=istio-system --grpc-port=8060 --grpc-host-identities=istio-standalone-citadel --self-signed-ca=true --self-signed-ca-org=zmcc-org --self-signed-ca-cert-ttl=24000h --sign-ca-certs=true --workload-cert-ttl=21h --kube-config=/mnt/mesos/sandbox/kubeconfig",
+    "container": {
+      "portMappings": [
+        {
+          "containerPort": 8060,
+          "hostPort": 0,
+          "protocol": "tcp",
+          "servicePort": 10104,
+          "name": "grpc"
+        }
+      ],
+      "type": "MESOS",
+      "volumes": [],
+      "docker": {
+        "image": "michaelbi/citadel-test:1.0.5",
+        "forcePullImage": true,
+        "parameters": []
+      }
+    },
+    "cpus": 1,
+    "disk": 0,
+    "fetch": [
+      {
+        "uri": "https://raw.githubusercontent.com/harryge00/mylinuxrc/master/dcos/kubeconfig",
+        "extract": false,
+        "executable": false,
+        "cache": false
+      }
+    ],
+    "instances": 1,
+    "maxLaunchDelaySeconds": 3600,
+    "mem": 1024,
+    "gpus": 0,
+    "networks": [
+      {
+        "name": "dcos",
+        "mode": "container"
+      }
+    ],
+    "requirePorts": false,
+    "upgradeStrategy": {
+      "maximumOverCapacity": 1,
+      "minimumHealthCapacity": 1
+    },
+    "killSelection": "YOUNGEST_FIRST",
+    "unreachableStrategy": {
+      "inactiveAfterSeconds": 0,
+      "expungeAfterSeconds": 0
+    },
+    "healthChecks": [],
+    "constraints": []
+  }
