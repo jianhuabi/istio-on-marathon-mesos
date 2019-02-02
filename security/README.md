@@ -145,4 +145,4 @@ you should clean up environment after done the practice.
 
 ## TODO
 
-Will integrate `node-agent` *SDS API* with Envoy when it is ready from Istio community. 
+I will integrate `node-agent` *SDS API* with Envoy when it is ready from Istio community. 
