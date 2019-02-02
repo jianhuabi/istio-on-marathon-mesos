@@ -1,0 +1,94 @@
+{
+  "environment": {
+    "SERVICES_DOMAIN": "marathon.l4lb.thisdcos.directory"
+  },
+  "id": "/httpbin",
+  "containers": [
+    {
+      "name": "httpbin",
+      "resources": {
+        "cpus": 0.5,
+        "mem": 256,
+        "disk": 0,
+        "gpus": 0
+      },
+      "exec": {
+        "command": {
+          "shell": "/usr/bin/python3 /usr/local/bin/gunicorn --bind=0.0.0.0:8000 httpbin:app"
+        }
+      },
+      "endpoints": [
+        {
+          "name": "http",
+          "containerPort": 8000,
+          "hostPort": 0,
+          "protocol": [
+            "tcp"
+          ],
+          "labels": {
+            "VIP_0": "/httpbin:8000"
+          }
+        }
+      ],
+      "image": {
+        "kind": "DOCKER",
+        "id": "citizenstig/httpbin"
+      }
+    },
+    {
+      "name": "proxy",
+      "resources": {
+        "cpus": 0.5,
+        "mem": 512,
+        "disk": 0,
+        "gpus": 0
+      },
+      "exec": {
+        "command": {
+          "shell": "chmod +777 /dev/stdout; /usr/local/bin/istio-iptables.sh -p 15001 -u 1337 -m REDIRECT -i '*' -b 8000; mkdir /etc/certs; cp ./certs/*.pem /etc/certs; chown -R istio-proxy:istio-proxy /et/certs/*.pem; su istio-proxy -c \"/usr/local/bin/pilot-agent proxy --discoveryAddress pilot.marathon.containerip.dcos.thisdcos.directory:15010  --domain marathon.l4lb.thisdcos.directory --serviceregistry Mesos --serviceCluster httpbin --zipkinAddress zipkin.marathon.autoip.dcos.thisdcos.directory:31767 --configPath /var/lib/istio --controlPlaneAuthPolicy NONE  --log_output_level=debug\""
+        }
+      },
+      "image": {
+        "kind": "DOCKER",
+        "id": "registry.cn-hangzhou.aliyuncs.com/zmcc-istio/proxy_debug:1.0.5-allinone"
+      },
+      "artifacts": [
+        {
+          "uri": "https://s3-ap-southeast-1.amazonaws.com/marathon-cmd/bundle-certs.tgz",
+          "extract": true,
+          "executable": false,
+          "cache": false
+        }
+      ]
+    }
+  ],
+  "networks": [
+    {
+      "name": "dcos",
+      "mode": "container"
+    }
+  ],
+  "scaling": {
+    "instances": 1,
+    "kind": "fixed"
+  },
+  "scheduling": {
+    "backoff": {
+      "backoff": 1,
+      "backoffFactor": 1.15,
+      "maxLaunchDelay": 3600
+    },
+    "upgrade": {
+      "minimumHealthCapacity": 1,
+      "maximumOverCapacity": 1
+    },
+    "killSelection": "YOUNGEST_FIRST",
+    "unreachableStrategy": {
+      "inactiveAfterSeconds": 0,
+      "expungeAfterSeconds": 0
+    },
+    "placement": {
+      "constraints": []
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "id": "/sleep",
+  "containers": [
+    {
+      "name": "sleep",
+      "resources": {
+        "cpus": 0.5,
+        "mem": 256
+      },
+      "image": {
+        "id": "pstauffer/curl",
+        "kind": "DOCKER"
+      },
+      "exec": {
+        "command": {
+          "shell": "sleep 3650d"
+        }
+      },
+      "endpoints": [
+        {
+          "name": "http",
+          "containerPort": 80,
+          "hostPort": 0,
+          "protocol": [
+            "tcp"
+          ],
+          "labels": {
+            "VIP_0": "/sleep:80"
+          }
+        }
+      ]
+    },
+    {
+      "name": "proxy",
+      "resources": {
+        "cpus": 0.5,
+        "mem": 512
+      },
+      "image": {
+        "id": "registry.cn-hangzhou.aliyuncs.com/zmcc-istio/proxy_debug:1.0.5-allinone",
+        "kind": "DOCKER"
+      },
+      "artifacts": [
+        {
+          "uri": "https://s3-ap-southeast-1.amazonaws.com/marathon-cmd/bundle-certs.tgz",
+          "extract": true,
+          "executable": false,
+          "cache": false
+        }
+      ],      
+      "exec": {
+        "command": {
+          "shell": "chmod +777 /dev/stdout; /usr/local/bin/istio-iptables.sh -p 15001 -u 1337 -m REDIRECT -i '*' -b 80; mkdir /etc/certs; cp ./certs/*.pem /etc/certs; chown -R istio-proxy:istio-proxy /et/certs/*.pem; su istio-proxy -c \"/usr/local/bin/pilot-agent proxy --log_output_level=debug --discoveryAddress pilot.marathon.containerip.dcos.thisdcos.directory:15010  --domain marathon.l4lb.thisdcos.directory --serviceregistry Mesos --serviceCluster httpbin --zipkinAddress zipkin.marathon.autoip.dcos.thisdcos.directory:31767 --configPath /var/lib/istio\""
+        }
+      }
+    }
+  ],
+  "scaling": {
+    "instances": 1,
+    "kind": "fixed"
+  },
+  "networks": [
+    {
+      "name": "dcos",
+      "mode": "container"
+    }
+  ],
+  "volumes": [],
+  "fetch": [],
+  "scheduling": {
+    "placement": {
+      "constraints": []
+    }
+  },
+  "environment": {
+    "SERVICES_DOMAIN": "marathon.l4lb.thisdcos.directory"
+  }
+}
